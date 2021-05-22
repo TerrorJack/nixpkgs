@@ -4,16 +4,16 @@ let
   # sadly needs to be exported because security_tool needs it
   sdk = stdenv.mkDerivation rec {
     pname = "MacOS_SDK";
-    version = "10.12";
+    version = "10.15";
 
-    # This URL comes from https://swscan.apple.com/content/catalogs/others/index-10.12.merged-1.sucatalog, which we found by:
+    # This URL comes from https://swscan.apple.com/content/catalogs/others/index-10.15.merged-1.sucatalog, which we found by:
     #  1. Google: site:swscan.apple.com and look for a name that seems appropriate for your version
-    #  2. In the resulting file, search for a file called DevSDK ending in .pkg
+    #  2. In the resulting file, search for a file called SDK ending in .pkg
     #  3. ???
     #  4. Profit
     src = fetchurl {
-      url    = "http://swcdn.apple.com/content/downloads/33/36/041-90419-A_7JJ4H9ZHO2/xs88ob5wjz6riz7g6764twblnvksusg4ps/DevSDK_OSX1012.pkg";
-      sha256 = "13xq34sb7383b37hwy076gnhf96prpk1b4087p87xnwswxbrisih";
+      url    = "http://swcdn.apple.com/content/downloads/45/28/061-26566-A_R7LP2VO5QF/svs27at6zihaghh3wj0av4y3wdcriu4n2j/CLTools_macOS1015_SDK.pkg";
+      sha256 = "1z47qi2dbja1s76wlj6x4az0hh40qkgxxhm349y6bnd299hy62j4";
     };
 
     nativeBuildInputs = [ xar cpio python3 pbzx ];
