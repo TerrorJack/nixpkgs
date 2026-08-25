@@ -3,29 +3,46 @@
   stdenv,
   cmake,
   fetchFromGitHub,
+  python3,
 }:
 
 stdenv.mkDerivation rec {
   pname = "wasm3";
-  version = "0.5.0";
+  version = "0.9.0";
 
   src = fetchFromGitHub {
     owner = "wasm3";
     repo = "wasm3";
-    rev = "v${version}";
-    sha256 = "07zzmk776j8ydyxhrnnjiscbhhmz182a62r6aix6kfk5kq2cwia2";
+    tag = "v${version}";
+    hash = "sha256-0LFsyAhT51rhXORnxMQ8/Jt22F6neE5aZZSxF5c7HBw=";
   };
+
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail " -fno-stack-check -fno-stack-protector" ""
+  '';
 
   nativeBuildInputs = [ cmake ];
 
+  nativeCheckInputs = [ python3 ];
+
   cmakeFlags = [
+    "-DBUILD_NATIVE=OFF"
     "-DBUILD_WASI=simple"
   ];
 
-  installPhase = ''
-    runHook preInstall
-    install -Dm755 wasm3 -t $out/bin
-    runHook postInstall
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  checkPhase = ''
+    runHook preCheck
+
+    pushd ../test
+    python3 run-regression-test.py
+    python3 run-wasi-test.py
+    python3 test_nan_propagation.py ../build/wasm3
+    popd
+
+    runHook postCheck
   '';
 
   meta = {
@@ -35,17 +52,14 @@ stdenv.mkDerivation rec {
     maintainers = with lib.maintainers; [ malbarbo ];
     license = lib.licenses.mit;
     knownVulnerabilities = [
-      # wasm3 expects all wasm code to be pre-validated, any users
-      # should be aware that running unvalidated wasm will potentially
-      # lead to RCE until upstream have added a builtin validator
-      "CVE-2022-39974"
+      # The validator mitigates malformed inputs for these issues, but
+      # upstream has no CVE-specific fix confirmation and the underlying
+      # paths remain reachable or their original reproducers are unavailable.
+      "CVE-2024-27528"
+      "CVE-2024-27527"
       "CVE-2022-34529"
-      "CVE-2022-28990"
-      "CVE-2022-28966"
+      "CVE-2022-39974"
       "CVE-2021-45947"
-      "CVE-2021-45946"
-      "CVE-2021-45929"
-      "CVE-2021-38592"
     ];
   };
 }
