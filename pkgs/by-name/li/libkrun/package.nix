@@ -112,8 +112,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   env.OPENSSL_NO_VENDOR = true;
 
-  passthru.updateScript = nix-update-script {
-    attrPath = "libkrun";
+  passthru = lib.optionalAttrs (variant == null) {
+    updateScript = nix-update-script {
+      attrPath = "libkrun";
+    };
   };
 
   meta = {
